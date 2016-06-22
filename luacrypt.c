@@ -7,6 +7,8 @@
 #include <string.h>
 
 #include <crypt.h>
+#include "crypt_blowfish.h"
+#define MAX_SALT_LEN 60
 
 static int lcrpyt( lua_State *L )
 {
@@ -25,8 +27,29 @@ static int lcrpyt( lua_State *L )
 	return 1;
 }
 
+static int bfcrpyt( lua_State *L )
+{
+	size_t textLength;
+	size_t keyLength;
+	const char *text = (const  char *)luaL_checklstring( L, 1, &textLength );
+	const char *key = (const  char *)luaL_checklstring( L, 2, &keyLength );
+	char output[MAX_SALT_LEN + 1];
+	memset(output, 0, MAX_SALT_LEN + 1);
+
+	 char res = *_crypt_blowfish_rn(text, key,output, sizeof(output));
+	if (!res)
+	{
+		memset(output, 0, MAX_SALT_LEN + 1);
+		return 0;
+	}
+	lua_pushlstring(L, output, sizeof(output));
+
+	return 1;
+}
+
 static const struct luaL_reg cpt[] = {
 	{"lcrpyt", lcrpyt},
+	{"bfcrpyt", bfcrpyt},
 	{NULL, NULL}
 };
 
